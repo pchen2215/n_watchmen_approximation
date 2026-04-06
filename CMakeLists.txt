@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(n_watchman_approximation)
+project(n_watchmen_approximation)
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 
 #CGAL_Qt6 is needed for the drawing.
@@ -14,10 +14,10 @@ else()
   message(FATAL_ERROR "qt6 not found")
 endif()
 #create the executable of the application
-create_single_source_cgal_program("n_watchman_approximation.cpp")
+create_single_source_cgal_program("n_watchmen_approximation.cpp")
 if(CGAL_Qt6_FOUND)
   #link it with the required CGAL libraries
-  target_link_libraries(n_watchman_approximation PUBLIC CGAL::CGAL_Qt6)
+  target_link_libraries(n_watchmen_approximation PUBLIC CGAL::CGAL_Qt6)
 else()
   message(FATAL_ERROR "qt6 not found")
 endif()
