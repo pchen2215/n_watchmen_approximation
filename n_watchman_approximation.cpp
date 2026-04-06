@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <set>
+#include <map>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 
@@ -40,11 +41,33 @@ void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polyg
 // Verifies that the specified patrol is fully connected
 bool verify(const Patrol& p) {
     if (p.size() == 1) { return p[0].first == p[0].second; }
+    
+    std::map<Point, std::set<Point>> graph;
+    for (const PatrolEdge& pe: p) {
+        if (pe.first == pe.second) {
+            graph[pe.first];
+            continue;
+        }
 
-    // TODO: IMPLEMENT
-    // possible solution is to construct graph from the patrol and check if the graph is connected
+        graph[pe.first].insert(pe.second);
+        graph[pe.second].insert(pe.first);
+    }
 
-    return true; // TEMP RETURN
+    std::set<Point> visited;
+    std::vector<Point> to_visit;
+    to_visit.push_back(p[0].first);
+    while (!to_visit.empty()) {
+        Point pt = to_visit.back();
+        to_visit.pop_back();
+        if (visited.find(pt) != visited.end()) { continue; }
+
+        visited.insert(pt);
+        for (const Point& next: graph[pt]) {
+            to_visit.push_back(next);
+        }
+    }
+
+    return visited.size() == graph.size();
 }
 
 int main(int argc, char** argv) {
