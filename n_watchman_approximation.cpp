@@ -33,7 +33,7 @@ void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polyg
 
     solution.push_back(patrol);
 
-#if true // Verification fail case - not exactly n patrols
+#if false // Verification fail case - not exactly n patrols
     patrol.clear();
     edge = { Point(87.5, 79.2), Point(87.5, 79.2) };
     patrol.push_back(edge);
