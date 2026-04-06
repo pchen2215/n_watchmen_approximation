@@ -26,10 +26,23 @@ void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polyg
     edge = { Point(1, 2), Point(3, 5) };
     patrol.push_back(edge);
 
+#if false // Verification fail case - disconnected patrol
+    edge = { Point(5, 5), Point(20, 17) };
+    patrol.push_back(edge);
+#endif
+
     solution.push_back(patrol);
 
+#if true // Verification fail case - not exactly n patrols
     patrol.clear();
     edge = { Point(87.5, 79.2), Point(87.5, 79.2) };
+    patrol.push_back(edge);
+
+    solution.push_back(patrol);
+#endif
+
+    patrol.clear();
+    edge = { Point(107.5, 79.2), Point(107.5, 79.2) };
     patrol.push_back(edge);
 
     solution.push_back(patrol);
@@ -40,7 +53,7 @@ void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polyg
 
 // Verifies that the specified patrol is fully connected
 bool verify(const Patrol& p) {
-    if (p.size() == 1) { return p[0].first == p[0].second; }
+    if (p.size() == 1) { return true; }
     
     std::map<Point, std::set<Point>> graph;
     for (const PatrolEdge& pe: p) {
