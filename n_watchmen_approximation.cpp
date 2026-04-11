@@ -4,16 +4,23 @@
 #include <fstream>
 #include <set>
 #include <map>
+#include <unordered_set>
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Polygon_2.h>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef Kernel::Point_2                                   Point;
 typedef CGAL::Polygon_2<Kernel>                           Polygon;
 
+typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel> CDT;
+
 using PatrolEdge = std::pair<Point, Point>; // first == second indicates stationary guard
 using Patrol = std::vector<PatrolEdge>;
+
+using PointGraph = std::map<Point, std::set<Point>>; // adjacency list graph
+using FaceSet = std::unordered_set<CDT::Face_handle>;
 
 // ================================================================================================
 
@@ -25,6 +32,9 @@ Polygon visibility(const Point& pt, const std::vector<Point>& polygon);
 
 // Verifies that the specified patrol is fully connected
 bool verify(const Patrol& p);
+
+// Extracts a point graph and internal faces from a triangulation.
+void extract_triangulation_info(const CDT& cdt, PointGraph& graph, FaceSet& internal);
 
 // ================================================================================================
 
@@ -93,9 +103,30 @@ int main(int argc, char** argv) {
 // ================================================================================================
 
 void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polygon, const int n) {
+    // Triangulate polygon
+    CDT cdt;
+    std::set<Point> orig_pts;
+    for (int i = 0; i < polygon.size(); i++) {
+        const Point& p1 = polygon[i];
+        const Point& p2 = polygon[(i + 1) % polygon.size()];
+        cdt.insert_constraint(p1, p2);
+        orig_pts.insert(p1);
+    }
 
-    // TODO: implement
-    assert(false);
+    PointGraph graph;
+    FaceSet internal;
+    extract_triangulation_info(cdt, graph, internal);
+
+    // Construct patrols
+    while (!internal.empty()) {
+
+        // TODO: implement
+
+    }
+
+    if (n == 1) { return; }
+
+    // TODO: implement for 1 < n
 
 }
 
@@ -114,7 +145,7 @@ Polygon visibility(const Point& pt, const std::vector<Point>& polygon) {
 bool verify(const Patrol& p) {
     if (p.size() == 1) { return true; }
     
-    std::map<Point, std::set<Point>> graph;
+    PointGraph graph;
     for (const PatrolEdge& pe: p) {
         if (pe.first == pe.second) {
             graph[pe.first];
@@ -140,6 +171,72 @@ bool verify(const Patrol& p) {
     }
 
     return visited.size() == graph.size();
+}
+
+// ================================================================================================
+
+void extract_triangulation_info(const CDT& cdt, PointGraph& graph, FaceSet& internal) {
+    assert(graph.empty() && internal.empty());
+    
+    FaceSet external;
+    {
+        FaceSet visited;
+        std::vector<CDT::Face_handle> to_visit;
+
+        CDT::Face_handle start;
+        {
+            auto begin = cdt.incident_faces(cdt.infinite_vertex());
+            auto curr = begin;
+            do {
+                int i = curr->index(cdt.infinite_vertex());
+                if (cdt.is_constrained({ curr, i })) {
+                    start = curr->neighbor(i);
+                    break;
+                }
+            } while (curr != begin);
+            internal.insert(start);
+            to_visit.push_back(start);
+        }
+
+        while (!to_visit.empty()) {
+            CDT::Face_handle curr = to_visit.back();
+            to_visit.pop_back();
+
+            if (visited.find(curr) != visited.end()) { continue; }
+            visited.insert(curr);
+
+            bool is_external = external.find(curr) != external.end();
+            for (int i = 0; i < 3; i++) {
+                CDT::Face_handle neighbor = curr->neighbor(i);
+
+                if (visited.find(neighbor) != visited.end()) { continue; }
+                if (cdt.is_infinite(neighbor)) { continue; }
+
+                bool crossing = cdt.is_constrained({ curr, i });
+                if (crossing) {
+                    if (is_external) {
+                        internal.insert(neighbor);
+                    } else external.insert(neighbor);
+                } else {
+                    if (is_external) {
+                        external.insert(neighbor);
+                    } else internal.insert(neighbor);
+                }
+
+                to_visit.push_back(neighbor);
+            }
+
+        }
+    }
+
+    for (CDT::Face_handle face: internal) {
+        for (int i = 0; i < 3; i++) {
+            const Point& p1 = face->vertex(i)->point();
+            const Point& p2 = face->vertex((i + 1) % 3)->point();
+            graph[p1].insert(p2);
+            graph[p2].insert(p1);
+        }
+    }
 }
 
 // ================================================================================================
