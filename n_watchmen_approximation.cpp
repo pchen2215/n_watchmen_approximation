@@ -38,6 +38,7 @@ void extract_triangulation_info(const CDT& cdt, PointGraph& graph, FaceSet& inte
 
 // ================================================================================================
 
+// Distance squared between two points
 Kernel::FT dist2(const Point& p1, const Point& p2) { return CGAL::squared_distance(p1, p2); }
 
 // ================================================================================================
@@ -175,9 +176,9 @@ void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polyg
                     next = { src, tgt };
                     max = incident;
                 } else if (max == incident) {
-                    
-                    // TODO: tiebreak by distance
-
+                    if (dist2(src, tgt) < dist2(next.first, next.second)) {
+                        next = { src, tgt };
+                    }
                 }
             }
         }
