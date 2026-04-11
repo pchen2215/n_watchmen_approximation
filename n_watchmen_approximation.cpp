@@ -38,6 +38,10 @@ void extract_triangulation_info(const CDT& cdt, PointGraph& graph, FaceSet& inte
 
 // ================================================================================================
 
+Kernel::FT dist2(const Point& p1, const Point& p2) { return CGAL::squared_distance(p1, p2); }
+
+// ================================================================================================
+
 int main(int argc, char** argv) {
     assert(argc == 4);
     int n = std::stoi(argv[1]);
@@ -114,15 +118,75 @@ void find_patrols(std::vector<Patrol>& solution, const std::vector<Point>& polyg
     }
 
     PointGraph graph;
-    FaceSet internal;
-    extract_triangulation_info(cdt, graph, internal);
+    FaceSet faces;
+    extract_triangulation_info(cdt, graph, faces);
 
-    // Construct patrols
-    while (!internal.empty()) {
+    // Helper functions
+    auto count_incident_faces = [](const Point& pt, const FaceSet& faces) {
+        int count = 0;
+        for (CDT::Face_handle face: faces) {
+            const Point& p1 = face->vertex(0)->point();
+            const Point& p2 = face->vertex(1)->point();
+            const Point& p3 = face->vertex(2)->point();
+            if (pt == p1 || pt == p2 || pt == p3) { count++; }
+        }
+        return count;
+    };
+    auto prune_incident_faces = [](const Point& pt, FaceSet& faces) {
+        auto it = faces.begin();
+        while (it != faces.end()) {
+            const Point& p1 = (*it)->vertex(0)->point();
+            const Point& p2 = (*it)->vertex(1)->point();
+            const Point& p3 = (*it)->vertex(2)->point();
+            if (pt == p1 || pt == p2 || pt == p3) {
+                it = faces.erase(it);
+            } else it++;
+        }
+    };
 
-        // TODO: implement
-
+    // Find starting vertex
+    std::set<Point> chosen;
+    {
+        Point start;
+        int max = 0;
+        for (const Point& pt: polygon) {
+            int incident = count_incident_faces(pt, faces);
+            if (max < incident) {
+                start = pt;
+                max = incident;
+            }
+        }
+        chosen.insert(start);
+        prune_incident_faces(start, faces);
     }
+
+    // Begin constructing patrol
+    Patrol& patrol = solution.emplace_back();
+    while (!faces.empty()) {
+        PatrolEdge next;
+        int max = -1;
+
+        for (const Point& src: chosen) {
+            for (const Point& tgt: polygon) {
+                if (chosen.find(tgt) != chosen.end()) { continue; }
+                
+                int incident = count_incident_faces(tgt, faces);
+                if (max < incident) {
+                    next = { src, tgt };
+                    max = incident;
+                } else if (max == incident) {
+                    
+                    // TODO: tiebreak by distance
+
+                }
+            }
+        }
+
+        prune_incident_faces(next.second, faces);
+        chosen.insert(next.second);
+        patrol.push_back(next);
+    }
+    if (chosen.size() == 1) { patrol.emplace_back(*chosen.begin(), *chosen.begin()); }
 
     if (n == 1) { return; }
 
