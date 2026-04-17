@@ -1,5 +1,8 @@
 ﻿/.vs
 /out
 /build
+/temp/*
+!/temp/.gitkeep
 
 plot_polygons.py
+
