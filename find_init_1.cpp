@@ -70,7 +70,7 @@ static void extract_triangulation_info(const CDT& cdt, PointGraph& graph, FaceSe
 
 // ================================================================================================
 
-void find_init_patrol_1(std::vector<Patrol>& solution, const Polygon& polygon) {
+void find_init_patrol_1(Patrol& patrol, const Polygon& polygon) {
     // Triangulate polygon
     CDT cdt;
     for (int i = 0; i < polygon.size(); i++) {
@@ -124,7 +124,6 @@ void find_init_patrol_1(std::vector<Patrol>& solution, const Polygon& polygon) {
     }
 
     // Begin constructing patrol
-    Patrol& patrol = solution.emplace_back();
     while (!faces.empty()) {
         PatrolEdge next;
         int max = -1;

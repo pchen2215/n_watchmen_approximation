@@ -4,8 +4,13 @@
 
 // ================================================================================================
 
-void find_init_patrol_2(std::vector<Patrol>& solution, const Polygon& polygon) {
-    Patrol& patrol = solution.emplace_back();
+void find_init_patrol_2(Patrol& patrol, const Polygon& polygon) {
+    // Early return for convex polygon
+    if (polygon.is_convex()) {
+        Point pt = *polygon.vertices_begin();
+        patrol.emplace_back(pt, pt);
+        return;
+    }
 
     // Populate candidate vertices
     std::set<Point> candidates;
@@ -21,15 +26,25 @@ void find_init_patrol_2(std::vector<Patrol>& solution, const Polygon& polygon) {
     Point start;
     {
         double best = DBL_MAX;
-        for (const Point& pt : candidates) {
-            std::vector<Polygon> temp_unseen = unseen;
-            update_unseen(visibility(pt, polygon), temp_unseen);
-            double remaining = total_area(temp_unseen);
-            if (remaining < best) {
-                start = pt;
-                best = remaining;
+
+        // Check all concave vertices
+        auto begin = polygon.vertices_circulator();
+        auto curr = begin;
+        do {
+            const Point& p1 = *(curr - 1);
+            const Point& p2  = *curr;
+            const Point& p3 = *(curr + 1);
+            if (CGAL::orientation(p1, p2, p3) == CGAL::RIGHT_TURN) {
+                std::vector<Polygon> temp_unseen = unseen;
+                update_unseen(visibility(p2, polygon), temp_unseen);
+                double remaining = total_area(temp_unseen);
+                if (remaining < best) {
+                    start = p2;
+                    best = remaining;
+                }
             }
-        }
+            curr++;
+        } while (curr != begin);
     }
     candidates.erase(start);
     update_unseen(visibility(start, polygon), unseen);

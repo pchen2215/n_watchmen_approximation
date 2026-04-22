@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 
     // Begin solving
     std::vector<Patrol> solution;
-    find_init_patrol_1(solution, polygon);
+    find_init_patrol_2(solution.emplace_back(), polygon);
     if (1 < n) { reduce_1(solution, polygon, n); }
     assert(solution.size() == n);
 
