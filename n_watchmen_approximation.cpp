@@ -16,7 +16,7 @@ void write_polygon(const Polygon& polygon, std::ostream& ostr);
 // ================================================================================================
 
 int main(int argc, char** argv) {
-    assert(argc == 4);
+    assert(argc == 4 || argc == 5);
     int n = std::stoi(argv[1]);
 
     // Read input polygon
@@ -57,6 +57,27 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 ostr << " <--> (" << pe.second.x() << ", " << pe.second.y() << ")\n";
+            }
+        }
+
+        ostr.close();
+        if (argc == 5) {
+            ostr.open(argv[4]);
+            for (const Patrol& p: solution) {
+                ostr << "PATROL\n";
+                PointGraph graph = to_graph(p);
+
+                std::set<Point> visited;
+                std::function<void(const Point&)> dfs = [&](const Point& curr) {
+                    visited.insert(curr);
+                    ostr << curr << "\n";
+                    for (const Point& next: graph[curr]) {
+                        if (visited.find(next) == visited.end()) {
+                            dfs(next);
+                        }
+                    }
+                };
+                dfs(graph.begin()->first);
             }
         }
     }
@@ -110,17 +131,7 @@ Polygon load_polygon(const std::string& path) {
 
 bool verify(const Patrol& p) {
     if (p.size() == 1) { return true; }
-    
-    PointGraph graph;
-    for (const PatrolEdge& pe: p) {
-        if (pe.first == pe.second) {
-            graph[pe.first];
-            continue;
-        }
-
-        graph[pe.first].insert(pe.second);
-        graph[pe.second].insert(pe.first);
-    }
+    PointGraph graph = to_graph(p);
 
     std::set<Point> visited;
     std::vector<Point> to_visit;

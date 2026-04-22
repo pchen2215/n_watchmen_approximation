@@ -1,5 +1,4 @@
 #pragma once
-
 #include "include.h"
 
 // ================================================================================================
@@ -36,6 +35,21 @@ inline double total_area(const std::vector<Polygon>& unseen) {
         count += CGAL::to_double(poly.area());
     }
     return count;
+}
+
+// ================================================================================================
+
+inline PointGraph to_graph(const Patrol& p) {
+    PointGraph graph;
+    for (const PatrolEdge& pe: p) {
+        if (pe.first == pe.second) {
+            graph[pe.first];
+            continue;
+        }
+        graph[pe.first].insert(pe.second);
+        graph[pe.second].insert(pe.first);
+    }
+    return graph;
 }
 
 // ================================================================================================
