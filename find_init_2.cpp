@@ -14,8 +14,18 @@ void find_init_patrol_2(Patrol& patrol, const Polygon& polygon) {
 
     // Populate candidate vertices
     std::set<Point> candidates;
-    for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); it++) {
-        candidates.insert(*it);
+    {
+        auto begin = polygon.vertices_circulator();
+        auto curr = begin;
+        do {
+            const Point& p1 = *(curr - 1);
+            const Point& p2 = *curr;
+            const Point& p3 = *(curr + 1);
+            if (CGAL::orientation(p1, p2, p3) == CGAL::RIGHT_TURN) {
+                candidates.insert(p2);
+            }
+            curr++;
+        } while (curr != begin);
     }
 
     // Initialize unseen area
