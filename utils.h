@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __UTILS_H
+#define __UTILS_H
+
 #include "include.h"
 
 // ================================================================================================
@@ -10,20 +12,23 @@ inline Kernel::FT dist2(const Point& p1, const Point& p2) {
 
 // ================================================================================================
 
-// Checks if the line segment from pt1 to pt2 crosses (collinear/touching is fine) with the polygon
-inline bool crosses(const Point& pt1, const Point& pt2, const Polygon& p) {
+// Checks if the line segment from pt1 to pt2 crosses the border of the polygon.
+// Segments that are colinear with a polygon or touch one or more edges without crossing are fine.
+inline bool crosses(const Point& pt1, const Point& pt2, const Polygon& poly) {
     Kernel::Segment_2 seg(pt1, pt2);
-    for (auto it = p.edges_begin(); it != p.edges_end(); it++) {
+
+    for (auto it = poly.edges_begin(); it != poly.edges_end(); it++) {
         auto res = CGAL::intersection(*it, seg);
         if (res) {
             if (const Point* p = std::get_if<Point>(&*res)) {
-                if (*p == pt1 || *p == pt2 || *p == it->source() || *p == it->target()) {
+                if (*p == pt1 || *p == pt2) {
                     continue;
-                } else return true;
+                } else return crosses(pt1, *p, poly) || crosses(*p, pt2, poly);
             }
         }
     }
-    return false;
+
+    return poly.bounded_side(CGAL::midpoint(seg)) == CGAL::ON_UNBOUNDED_SIDE;
 }
 
 // ================================================================================================
@@ -53,3 +58,15 @@ inline PointGraph to_graph(const Patrol& p) {
 }
 
 // ================================================================================================
+
+inline void print_graph(const PointGraph& pg) {
+    for (auto& [src, edges]: pg) {
+        std::cout << "Point " << src << ":\n";
+        for (const Point& tgt: edges) {
+            std::cout << "  edge to " << tgt << "\n";
+        }
+    }
+}
+
+// ================================================================================================
+#endif

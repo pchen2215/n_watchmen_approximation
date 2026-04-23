@@ -18,7 +18,7 @@ set(SOURCE_FILES n_watchmen_approximation.cpp
 				 visibility.cpp
 				 find_init_1.cpp
 				 find_init_2.cpp
-				 reduce_1.cpp)
+				 reduce.cpp)
 add_executable(n_watchmen_approximation ${SOURCE_FILES})
 if(CGAL_Qt6_FOUND)
   #link it with the required CGAL libraries

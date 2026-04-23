@@ -1,6 +1,7 @@
 #include "include.h"
 #include "solution.h"
 #include "utils.h"
+#include "visibility.h"
 
 // ================================================================================================
 
@@ -9,6 +10,7 @@ Polygon load_polygon(const std::string& path);
 
 // Verifies that the specified patrol is fully connected
 bool verify(const Patrol& p);
+bool verify(const std::vector<Patrol>& s, const Polygon& p);
 
 // Development helper for exporting polygons in the same simple point format as input.
 void write_polygon(const Polygon& polygon, std::ostream& ostr);
@@ -25,11 +27,12 @@ int main(int argc, char** argv) {
     // Begin solving
     std::vector<Patrol> solution;
     find_init_patrol_2(solution.emplace_back(), polygon);
-    if (1 < n) { reduce_1(solution, polygon, n); }
+    reduce(solution, polygon, n);
     assert(solution.size() == n);
 
     // Verify solution
     for (const Patrol& p: solution) { assert(verify(p)); }
+    assert(verify(solution, polygon));
 
     // Collect solution stats
     std::vector<double> patrol_len;
@@ -148,6 +151,20 @@ bool verify(const Patrol& p) {
     }
 
     return visited.size() == graph.size();
+}
+
+// ================================================================================================
+
+bool verify(const std::vector<Patrol>& s, const Polygon& p) {
+    std::vector<Polygon> unseen;
+    unseen.push_back(p);
+    for (const Patrol& patrol: s) {
+        for (const PatrolEdge& pe: patrol) {
+            update_unseen(visibility(pe.first, p), unseen);
+            update_unseen(visibility(pe.second, p), unseen);
+        }
+    }
+    return unseen.empty();
 }
 
 // ================================================================================================

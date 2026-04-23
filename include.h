@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __INCLUDE_H
+#define __INCLUDE_H
 
 #include <string>
 #include <cassert>
@@ -15,6 +16,7 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/draw_polygon_2.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arr_naive_point_location.h>
@@ -38,3 +40,5 @@ using Patrol = std::vector<PatrolEdge>;
 
 using PointGraph = std::map<Point, std::set<Point>>; // adjacency list graph
 using FaceSet = std::unordered_set<CDT::Face_handle>;
+
+#endif
