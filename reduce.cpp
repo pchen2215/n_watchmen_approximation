@@ -11,8 +11,6 @@ enum reduction_type {
 void reduce(std::vector<Patrol>& solution, const Polygon& polygon, int n) {
     PointGraph graph = to_graph(solution[0]);
 
-    print_graph(graph);
-
     // Simplify initial solution
     if (graph.size() > 1) {
         
@@ -26,9 +24,6 @@ void reduce(std::vector<Patrol>& solution, const Polygon& polygon, int n) {
             }
 
             for (const Point& leaf: leaves) {
-
-                std::cout << "checking leaf " << leaf << "\n";
-
                 std::vector<Polygon> unseen;
                 unseen.push_back(polygon);
                 for (auto it = graph.begin(); it != graph.end(); it++) {
@@ -38,15 +33,10 @@ void reduce(std::vector<Patrol>& solution, const Polygon& polygon, int n) {
                 }
 
                 if (unseen.empty()) {
-
-                    std::cout << "leaf pruned\n";
-
                     graph[*graph[leaf].begin()].erase(leaf);
                     graph.erase(leaf);
                 }
             }
-
-            std::cout << "\n";
         };
 
         // Prune longest edges
