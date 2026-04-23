@@ -72,14 +72,21 @@ int main(int argc, char** argv) {
                 PointGraph graph = to_graph(p);
                 patrol_points.emplace_back();
 
-                std::set<Point> visited;
+                std::set<Point> unvisited;
+                for (auto it = graph.begin(); it != graph.end(); it++) {
+                    unvisited.insert(it->first);
+                }
+
                 std::function<void(const Point&)> dfs = [&](const Point& curr) {
-                    visited.insert(curr);
+                    unvisited.erase(curr);
                     patrol_points.back().push_back(curr);
                     ostr << curr << "\n";
                     for (const Point& next: graph[curr]) {
-                        if (visited.find(next) == visited.end()) {
+                        if (unvisited.find(next) != unvisited.end()) {
                             dfs(next);
+                            if (!unvisited.empty()) {
+                                ostr << curr << "\n";
+                            }
                         }
                     }
                 };
