@@ -88,15 +88,19 @@ int main(int argc, char** argv) {
                     }
                 };
 
+                bool wrote = false;
                 for (const PatrolEdge& pe: p) {
                     if (graph[pe.first].size() == 1) {
                         dfs(pe.first);
+                        wrote = true;
                         break;
                     } else if (graph[pe.second].size() == 1) {
                         dfs(pe.second);
+                        wrote = true;
                         break;
                     }
                 }
+                if (!wrote) { dfs(graph.begin()->first); }
             }
             ostr.close();
 
