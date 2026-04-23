@@ -84,13 +84,19 @@ int main(int argc, char** argv) {
                     for (const Point& next: graph[curr]) {
                         if (unvisited.find(next) != unvisited.end()) {
                             dfs(next);
-                            if (!unvisited.empty()) {
-                                ostr << curr << "\n";
-                            }
                         }
                     }
                 };
-                dfs(graph.begin()->first);
+
+                for (const PatrolEdge& pe: p) {
+                    if (graph[pe.first].size() == 1) {
+                        dfs(pe.first);
+                        break;
+                    } else if (graph[pe.second].size() == 1) {
+                        dfs(pe.second);
+                        break;
+                    }
+                }
             }
             ostr.close();
 
