@@ -39,10 +39,42 @@ void reduce(std::vector<Patrol>& solution, const Polygon& polygon, int n) {
             }
         };
 
+        auto pipe_reduction = [&]() {
+            std::set<Point> pipes;
+            for (auto it = graph.begin(); it != graph.end(); it++) {
+                if (it->second.size() == 2) {
+                    pipes.insert(it->first);
+                }
+            }
+
+            for (const Point& pipe: pipes) {
+                std::vector<Polygon> unseen;
+                unseen.push_back(polygon);
+                for (auto it = graph.begin(); it != graph.end(); it++) {
+                    if (it->first == pipe) { continue; }
+                    update_unseen(visibility(it->first, polygon), unseen);
+                    if (unseen.empty()) { break; }
+                }
+
+                if (unseen.empty()) {
+                    Point p1 = *graph[pipe].begin();
+                    Point p2 = *(++graph[pipe].begin());
+                    if (!crosses(p1, p2, polygon)) {
+                        graph[p1].insert(p2);
+                        graph[p1].erase(pipe);
+                        graph[p2].insert(p1);
+                        graph[p2].erase(pipe);
+                        graph.erase(pipe);
+                    }
+                }
+            }
+        };
+
         // Prune longest edges
         int i = 1;
         while (true) {
             leaf_reduction();
+            pipe_reduction();
             if (i == n) { break; }
 
             PatrolEdge max;
