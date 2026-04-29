@@ -103,57 +103,6 @@ int main(int argc, char** argv) {
                 if (!wrote) { dfs(graph.begin()->first); }
             }
             ostr.close();
-
-            std::string scene_path = argv[4];
-            const std::size_t dot = scene_path.find_last_of('.');
-            scene_path = (dot == std::string::npos ? scene_path : scene_path.substr(0, dot)) + ".json";
-            std::ofstream json(scene_path);
-            if (!json.is_open()) { throw std::runtime_error("Failed to open guard scene file: " + scene_path); }
-            auto write_point = [](std::ostream& os, const Point& pt) {
-                os << '[' << CGAL::to_double(pt.x()) << ", " << CGAL::to_double(pt.y()) << ']';
-            };
-            json << "{\n"
-                 << "  \"title\": \"Patrol Demo\",\n"
-                 << "  \"polygon_file\": \"" << argv[2] << "\",\n"
-                 << "  \"duration\": 9.0,\n"
-                 << "  \"hold_time\": 0.6,\n"
-                 << "  \"quality\": \"medium_quality\",\n"
-                 << "  \"fps\": 30,\n"
-                 << "  \"background_color\": \"#08111f\",\n"
-                 << "  \"polygon_fill\": \"#102238\",\n"
-                 << "  \"polygon_stroke\": \"#d9e2ec\",\n"
-                 << "  \"guards\": [\n";
-            for (int i = 0; i < patrol_points.size(); i++) {
-                const std::vector<Point>& pts = patrol_points[i];
-                json << "    {\n      \"" << (pts.size() == 1 ? "point" : "path") << "\": ";
-                if (pts.size() == 1) write_point(json, pts[0]);
-                else {
-                    json << '[';
-                    for (int j = 0; j < pts.size(); j++) {
-                        if (j) json << ", ";
-                        write_point(json, pts[j]);
-                    }
-                    json << ']';
-                }
-                json << ",\n      \"label\": \"Patrol " << i << "\",\n      \"color\": \"#f6ad55\"";
-                if (pts.size() > 1) json << ",\n      \"cycles\": 2.0,\n      \"ping_pong\": true,\n      \"trail\": false";
-                json << "\n    }" << (i + 1 < patrol_points.size() ? "," : "") << '\n';
-            }
-            json << "  ]\n}\n";
-            json.close();
-
-            std::string bin_path = argv[0];
-            const std::size_t slash = bin_path.find_last_of("/\\");
-            const std::string bin_dir = (slash == std::string::npos ? "" : bin_path.substr(0, slash + 1));
-            const std::string project_dir = bin_dir + "../";
-            std::string python = project_dir + ".venv/bin/python3";
-            if (!std::ifstream(python).good()) { python = "python3"; }
-            if (std::system(("\"" + python + "\" -c \"import numpy, manim\"").c_str()) != 0) {
-                throw std::runtime_error("Python dependencies missing: need numpy and manim.");
-            }
-            if (std::system(("\"" + python + "\" \"" + project_dir + "animate_guards.py\" \"" + scene_path + "\"").c_str()) != 0) {
-                throw std::runtime_error("Failed to render patrol animation.");
-            }
         }
     }
 
